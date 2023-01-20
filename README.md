@@ -121,6 +121,53 @@ flag.StringVar(&lang, "lang", "en", "The required language, e.g. en, ur...")
 lang := flag.String("lang", "en", "The required...")
 ```
 
+## Logger
+
+Logging is when you keep track of the current state or events with readable messages. These messages are assigned an importance level: trace, bug, error, fatal, etc.
+
+The most common are _debug_, _info_, and _error_. Declare them as an enumeration of constants:
+```go
+const (
+	// LevelDebug represents the lowest level of log, mostly used for debugging purposes.
+	LevelDebug Level = iota
+	// LevelInfo represents a logging level that contains information deemed valuable.
+	LevelInfo
+	// LevelError represents the highest logging level, only to be used to trace errors.
+	LevelError
+)
+```
+Use `iota` to signify an enumeration.
+
+When it makes sense, mimic library functions. For example, the following logger method mimic `fmt.Printf`'s signature:
+
+```go
+// Logger is used to log information
+type Logger struct {
+}
+
+// Debugf formats and prints a message if the log level is debug or higher
+func (l *Logger) Debugf(format string, args ...any) {
+
+}
+```
+
+### iota
+
+`= iota` lets the compiler know that we are starting an enumeration. It creates a sequence of numbers that increment on each line.
+
+> You can use iota on any type that is based on an integer.
+
+### Variadic functions
+
+You might need to pass a variable number of parameters to a function: zero, one, or many. Use the variadiac function syntax--the last argument of a function is of the type `...{some type}`. It is common to see `...any`, because `any` is (sort of?) an alias for the empty inferface (`interface{}`). For example: 
+
+```go
+// Debugf formats and prints a message if the log level is debug or higher
+func (l *Logger) Debugf(format string, args ...any) {
+
+}
+```
+
 ## Misc
 
 ### Multiple return values
@@ -136,9 +183,9 @@ You will handle multiple value assignment in the following common cases:
 Go provides 3 types of quotes:
 
 | Type         | Example | Description |
-|:-------------|:--------|:------------|
+|--------------|:--------|:------------|
 | double quote | `" "`   | Creates literal strings. |
-| backtick     | \`\`    | Creates raw literal strings (cannot use escape sequence, such as `\n`). Use these so you do not have to escape double quotes.  |
+| backtick     | \` \`    | Creates raw literal strings (cannot use escape sequence, such as `\n`). Use these so you do not have to escape double quotes.  |
 | single quote | ' '     | Creates runes, a single unicode code point. |
 
 ### Pointers
@@ -146,6 +193,34 @@ Go provides 3 types of quotes:
 Go functions pass argmuments by value. If you want to alter a value, pass the function a pointer to the value.
 
 | Operator | Name                 | Description |
-|:---------|:---------------------|:------------|
+|----------|:---------------------|:------------|
 | `&`      | Address operator     | Retrieves the address of a variable. |
 | `*`      | Indirection operator | Access the value that the pointer points to (_follow_ the pointer) |
+
+### go.mod
+
+### Creating objects
+
+If you do not use a constructor, you can create a zero-valued object:
+
+```go
+var log pocketlog.Logger
+log := pocketlog.Logger{}
+```
+
+It is better to create a `NewXxx()` function that acts as a constructor. If the name of the object is obvious from the package name, just name it `New()`:
+
+```go
+// Logger is used to log information
+type Logger struct {
+	threshold Level
+}
+
+// New returns a logger, ready to log at the required threshold
+func New(threshold Level) *Logger {
+	return &Logger{
+		threshold: threshold,
+	}
+}
+```
+Notice that the Logger struct has no exposed fields, and `New()` returns a pointer to a Logger. Returning a pointer is a best practice to conserve memory.
