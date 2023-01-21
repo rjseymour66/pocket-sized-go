@@ -6,7 +6,11 @@ You can name files `hello_world_internal_test.go`. The `internal` signifies that
 
 The compliler ignores files that end in `_test.go`.
 
-When you test variations of the same function, you can use `TestFunction_Scenario1`, and `TestFunction_Scenario2` to distinguish. (Likely easier to use table tests.)
+When you test variations of the same function, append an underscore and a description of the expected output or test scenario to the test function name. For example, you can use `TestFunction_Scenario1`, and `TestFunction_Scenario2` to distinguish different scenarios. (Likely easier to use table tests.)
+
+### Package names
+
+Append the `_test` to the package name of a test file. For example, a file that tests the `example` package can use the `example_test` package, and the Go compiler will not complain if you include it in the `example` package.
 
 ### Testing steps
 
@@ -62,7 +66,8 @@ for scenarioName, tc := range tests {
 
 ### Example syntax to test STDOUT of a function
 
-If you test the STDOUT of a function, you can prepend it with `ExampleFuncName()`. Within that function, you can use Go's `Example` syntax. This syntax allows you to write commented lines to test the output. The first contains `Output:`, and the second contains the expected output.
+
+If you test the STDOUT of a function, you can prepend it with `ExampleFuncName()`. Within that function, you can use Go's `Example` syntax. This syntax allows you to write commented lines to test the output. The first contains `Output:`, and the second contains the expected output. This kind of testing is called _open-box_ testing.
 
 For example, the following `Example` syntax tests a hello world program:
 
@@ -73,6 +78,10 @@ func ExampleMain() {
 	// Hello world
 }
 ```
+> Notice that the `Example` syntax does not accept as an argument the `*testing` object.
+
+_Closed-box_ testing is when you test a system from the outside. This type of testing is useful with the `Example` syntax. 
+
 
 ### Creating new types out of basic types
 
@@ -170,6 +179,14 @@ func (l *Logger) Debugf(format string, args ...any) {
 
 ## Misc
 
+#### Returning Printf vals
+
+If you are writing a function that doesn't return anything but logs to the console, use two blank identifiers for the values that `fmt.Printf` returns (int, error):
+```g0
+_, _ = fmt.Printf(format+"\n", args...)
+```
+The blank identifier means that we know that the function returns values, but we do not want to use them.
+
 ### Multiple return values
 
 You will handle multiple value assignment in the following common cases:
@@ -199,6 +216,9 @@ Go functions pass argmuments by value. If you want to alter a value, pass the fu
 
 ### go.mod
 
+`go mod download`
+: Downloads the dependencies for a project.
+
 ### Creating objects
 
 If you do not use a constructor, you can create a zero-valued object:
@@ -224,3 +244,100 @@ func New(threshold Level) *Logger {
 }
 ```
 Notice that the Logger struct has no exposed fields, and `New()` returns a pointer to a Logger. Returning a pointer is a best practice to conserve memory.
+
+## Documentation
+
+Must read: [Godoc: documenting Go code](https://go.dev/blog/godoc)
+
+Use `go doc <path>` to return the documentation for a package or symbol (ex: function) within the `<path>` directory and subdirectories. For example, the following commands are executed in the `pocketlog` directory:
+
+```shell
+pocketlog
+├── level.go
+├── logger.go
+└── logger_test.go
+
+$ go doc .
+package pocketlog // import "log/pocketlog"
+
+type Level byte
+    const LevelDebug Level = iota ...
+type Logger struct{ ... }
+    func New(threshold Level) *Logger
+
+$ go doc New
+package pocketlog // import "."
+
+func New(threshold Level) *Logger
+    New returns a logger, ready to log at the required threshold.
+```
+## Interfaces
+
+Interfaces let you perform actions to a variety of inputs and outputs if they conform to the correct interface contract. Go provides standard interfaces that address many common use cases.
+
+### io.Writer
+
+An object of type `io.Writer` can write to any destination that implements its interface.
+
+```go
+type Writer interface {
+    Write(p []byte) (n int, err error)
+}
+```
+
+### io.Reader
+
+An object of type `io.Reader` can read from any source that implements its interface:
+
+```go
+type Reader interface {
+    Read(p []byte) (n int, err error)
+}
+```
+
+## Strategies 
+
+### Functional Options pattern
+
+The Functional Options pattern creates flexible constructors for Go types. It simplifies configuration, and lets the user set specific behaviors [without altering the API](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis).
+
+1. Create a new file called `options.go`.
+2. Define a new exported function type (a new type of function) called `Options`. The function should accept as an argument a pointer of the type you are implementing this pattern on, so the function can change the type.
+   For example, the following type is for a logger of type `Logger`:
+   ```go
+   type Option func(*Logger)
+   ```
+3. For each constructor configuration option that you want to add, create a function that returns a function of type `Option`:
+   - Name the function `WithXxx`, where `Xxx` is the name of the configuration that the function sets. The function takes as a parameter the option that you are setting.
+   - The return function of type `Option` sets the option:
+   ```go
+   // WithOutput returns a configuration function that sets the output of logs.
+   func WithOutput(output io.Writer) Option {
+	   return func(lgr *Logger) {
+		   lgr.output = output
+	   }
+   }
+   ``` 
+4. Update the constructor type to accept variable number of `Options`:
+   ```go
+   // New returns a logger, ready to log at the required threshold.
+   func New(threshold Level, opts ...Option) *Logger {
+        // implementation
+   }
+   ```
+5. In the constructor, set any default values, then loop through `opt` and execute the provided `Option` functions on the object that the constructor returns:
+   ```go
+   // New returns a logger, ready to log at the required threshold.
+   func New(threshold Level, opts ...Option) *Logger {
+	   // set defaults
+	   lgr := &Logger{threshold: threshold, output: os.Stdout}
+
+	   // add config options
+	   for _, configFunc := range opts {
+		   configFunc(lgr)
+	   }
+
+	   return lgr
+   }
+   ```
+   
