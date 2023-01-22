@@ -32,6 +32,7 @@ func (l *Logger) Debugf(format string, args ...any) {
 	if l.threshold > LevelDebug {
 		return
 	}
+	format = fmt.Sprintf("DEBUG:\t%s", format)
 
 	l.logf(l.output, format, args...)
 }
@@ -43,11 +44,14 @@ func (l *Logger) Infof(format string, args ...any) {
 		return
 	}
 
+	format = fmt.Sprintf("INFO:\t%s", format)
+
 	l.logf(l.output, format, args...)
 }
 
 // Errorf formats and prints a message if the log level is error.
 func (l *Logger) Errorf(format string, args ...any) {
+	format = fmt.Sprintf("ERROR:\t%s", format)
 	l.logf(l.output, format, args...)
 }
 

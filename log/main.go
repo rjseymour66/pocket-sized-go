@@ -12,5 +12,5 @@ func main() {
 	lgr.Errorf("Errors are values. Documentation is for %s", "users")
 	lgr.Debugf("Make the zero (%d) value useful.", 0)
 
-	lgr.Infof("Hallo, %d %v", 2022, time.Now())
+	lgr.Infof("Hello, %d %v", 2022, time.Now())
 }
