@@ -90,6 +90,43 @@ Using the proper type is important. Creating a custom type out of a basic type t
 type language string
 ```
 
+### Mocking interfaces
+
+If you have to test a function that uss an interface that is not standard, you can create a type that holds the same type of data that your function uses, and then implement the interface on that type.
+
+For example, you need to mock the `io.Writer` interface because you are testing a logger that writes a `string` to an `io.Writer`. The `io.Writer` interface writes a string of bytes and returns the number of bytes written and an error value:
+```go
+Write(p []byte) (n int, err error)
+```
+
+To mock this interface, create a type that holds the `string` type:
+```go
+type testWriter struct {
+	contents string
+}
+```
+
+Next, implement the `io.Writer` interface on the `testWriter` type:
+```go
+// Write implements the io.Writer interface
+func (tw *testWriter) Write(p []byte) (n int, err error) {
+	tw.contents = tw.contents + string(p)
+	return len(p), nil
+}
+```
+Now, you can execute tests using your function, and pass the `testWriter` to the code that you are testing:
+```go
+testedLogger := pocketlog.New(tc.level, pocketlog.WithOutput(tw))
+
+testedLogger.Debugf(debugMessage)
+testedLogger.Infof(infoMessage)
+testedLogger.Errorf(errorMessage)
+
+if tw.contents != tc.expected {
+    t.Errorf("invalid contents, expected %q, got %q", tc.expected, tw.contents)
+}
+```
+
 ## Maps
 
 A map is a hash table--a set of pairs of distinct keys and values. Defining a map is similar to defining a struct literal:

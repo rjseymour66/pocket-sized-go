@@ -32,22 +32,15 @@ func (l *Logger) Debugf(format string, args ...any) {
 	if l.threshold > LevelDebug {
 		return
 	}
-	// making sure we can safely write to the output
-	if l.output == nil {
-		l.output = os.Stdout
-	}
+
 	l.logf(l.output, format, args...)
 }
 
 // Infof formats and prints a message if the log level is info or higher.
 func (l *Logger) Infof(format string, args ...any) {
 	// validate it is the correct logger
-	if l.threshold > LevelInfo {
+	if l.threshold < LevelInfo {
 		return
-	}
-	// making sure we can safely write to the output
-	if l.output == nil {
-		l.output = os.Stdout
 	}
 
 	l.logf(l.output, format, args...)
@@ -57,10 +50,6 @@ func (l *Logger) Infof(format string, args ...any) {
 func (l *Logger) Errorf(format string, args ...any) {
 	if l.threshold < LevelError {
 		return
-	}
-	// making sure we can safely write to the output
-	if l.output == nil {
-		l.output = os.Stdout
 	}
 
 	l.logf(l.output, format, args...)
