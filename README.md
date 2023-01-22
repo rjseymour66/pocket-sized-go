@@ -167,9 +167,17 @@ flag.StringVar(&lang, "lang", "en", "The required language, e.g. en, ur...")
 lang := flag.String("lang", "en", "The required...")
 ```
 
-## Logger
+## Logging
 
 Logging is when you keep track of the current state or events with readable messages. These messages are assigned an importance level: trace, bug, error, fatal, etc.
+> Logs are not a debugging tool.
+
+Log storage can be expensive--you should understand what you must log, and how format them. Here are some tips:
+- Write clear messages.
+- Be concise. Do not exceed 1000 characters or bytes. You might want to set a limit in the logging function that truncates messages that exceed the limit.
+- 
+
+
 
 The most common are _debug_, _info_, and _error_. Declare them as an enumeration of constants:
 ```go
