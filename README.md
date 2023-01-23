@@ -175,7 +175,7 @@ Logging is when you keep track of the current state or events with readable mess
 Log storage can be expensive--you should understand what you must log, and how format them. Here are some tips:
 - Write clear messages.
 - Be concise. Do not exceed 1000 characters or bytes. You might want to set a limit in the logging function that truncates messages that exceed the limit.
-- 
+- Create structured messages (i.e. JSON). Often, programs--not humans--read logs and to display them in dashboards.
 
 
 

@@ -1,7 +1,6 @@
 package pocketlog
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -65,9 +64,4 @@ func (l *Logger) logf(output io.Writer, format string, args ...any) {
 type jsonLog struct {
 	Level   Level  `json:"level"`
 	Message string `json:"message"`
-}
-
-// MarshalJSON formats log and returns the JSON object
-func (j *jsonLog) MarshalJSON() ([]byte, error) {
-	return json.Marshal(j)
 }
