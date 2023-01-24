@@ -24,7 +24,10 @@ func New(playerInput io.Reader) *Game {
 func (g *Game) Play() {
 	fmt.Println("Welcome to Gordle!")
 
-	fmt.Printf("Enter a guess:\n")
+	// ask for a valid word
+	guess := g.ask()
+
+	fmt.Printf("Your guess is: %s\n", string(guess))
 }
 
 const wordLength = 5

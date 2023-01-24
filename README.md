@@ -290,6 +290,10 @@ func New(threshold Level) *Logger {
 ```
 Notice that the Logger struct has no exposed fields, and `New()` returns a pointer to a Logger. Returning a pointer is a best practice to conserve memory.
 
+### golang.org/x/
+
+This is where developers write their new libraries. When they are stable, they are moved to the standard library.
+
 ## Documentation
 
 Must read: [Godoc: documenting Go code](https://go.dev/blog/godoc)
@@ -338,6 +342,12 @@ An object of type `io.Reader` can read from any source that implements its inter
 type Reader interface {
     Read(p []byte) (n int, err error)
 }
+```
+
+You can create a `Reader` with the `strings.NewReader()` function. The following statement creates a `Reader` that reads from the "HELLO" string:
+
+```go
+r := strings.NewReader("HELLO")
 ```
 
 ## Strategies 
