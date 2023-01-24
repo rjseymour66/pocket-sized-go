@@ -385,4 +385,75 @@ The Functional Options pattern creates flexible constructors for Go types. It si
 	   return lgr
    }
    ```
-   
+
+## bufio
+
+TODO Reader vs Scanner
+
+## Character encoding
+
+All Go source files are encoded in the Unicode Transformation Format (UTF), a character encoding format that is able to encode all possible character code points in Unicode. UTF-8 means that the character is encoded using 8 bits (a byte).
+
+### History
+
+[Read this](https://deliciousbrains.com/how-unicode-works/).
+
+#### ASCII
+
+First, the most-commonly used encoding was the American Standard Code for Information Interchange (ASCII). This encoding covered the latin alphabet. In ASCII, each character gets one byte, which means that you can only represent 256 characters.
+
+| Character | ASCII code | Byte representation |
+|-----------|------------|------|
+| A | 065 | 01000001 |
+| a | 097 | 01100001 |
+| B | 066 | 01000010 |
+...
+
+
+
+#### Unicode
+
+Unicode can represent every symbol and every language. Unicode assigns a _code point_ to each character. Each code point is a a number that is given meaning by the Unicode standard.
+
+| Character | Code point |
+|-----------|------------|
+| A | U+0041 |
+| a | U+0061 |
+
+#### UTF-8
+
+UTF-8 is an encoding system for Unicode. It represents characters in a set of one to four bytes. The first characters in the Unicode library use one byte--the first 128 use the ASCII binary representation--but later characters use up to four bytes. 
+
+| Character | Code point | UTF-8 binary encoding |
+|-----------|------------|-----------------------|
+| A | U+0041 | 01000001 |
+| a | U+0061 | 01100001 |
+| 0 | U+0030 | 00110000 |
+| 9 | U+0039 | 00111001 |
+...
+
+## runes
+
+runes support [Unicode](https://en.wikipedia.org/wiki/Unicode), which means that a rune is a Unicode codepoint.
+
+For example, the following code prints out the length in UTF-8, and then the length in runes (Unicode code points). Notice that `Hello, 世界` is 9 characters:
+
+```go
+fmt.Println(len("Hello, 世界"))         // 13 UTF-8 bytes
+fmt.Println(len([]rune("Hello, 世界"))) //  9 Unicode code points
+```
+When you iterate over a string, you can access its byte representation or its rune representation:
+
+```go
+fmt.Println([]byte(str))    // [82 121 97 110 32 83 101 121 109 111 117 114]
+fmt.Println([]rune(str))    // [82 121 97 110 32 83 101 121 109 111 117 114]
+```
+
+You cannot convert a byte slice to a rune slice directly--it returns an error. First, you must convert the bytes to a `string`, then to a `[]rune`:
+
+```go
+bSlice := []byte{'s', 'l', 'i', 'c', 'e'}
+fmt.Println("byte slice\t", bSlice)                     // [115 108 105 99 101]
+fmt.Println("byte -> string\t", string(bSlice))         // slice
+fmt.Println("string -> rune\t", []rune(string(bSlice))) // [115 108 105 99 101]
+```
