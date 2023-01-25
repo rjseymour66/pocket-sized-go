@@ -240,6 +240,33 @@ You will handle multiple value assignment in the following common cases:
 - Reading from a channel with the `<-` operator. This returns a value and wheher the channel is closed.
 - Functions that return multiple values. 
 
+#### Return an error instead of bool
+
+Validation functions should return an error because it provides the caller more options and is easier to test.
+
+#### Wrapping an error
+
+When you handle an error, you can wrap it to propagate it to the upper layer. Wrapping the error provides context to the upper layer so it can decide what to do with it. Use the `%w` (`w` for _wrap_) formatting verb to wrap the error:
+```go
+...
+if a != b {
+    return fmt.Errorf("... %w …", …, err, …)
+}
+...
+```
+#### Testing errors
+
+To test that a function returns the correct error, use `errors.Is()`:
+
+```go
+...
+if !errors.Is(err, tc.expected) {
+    t.Errorf("%c, expected %q, got %q", tc.word, tc.expected, err)
+}
+...
+```
+
+
 ### Quotes and strings
 
 Go provides 3 types of quotes:

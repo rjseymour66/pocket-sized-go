@@ -1,6 +1,7 @@
 package gordle
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -33,11 +34,50 @@ func TestGameAsk(t *testing.T) {
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
 
-			g := New(strings.NewReader(tc.input))
+			g := New(strings.NewReader(tc.input), string(tc.want), 0)
 
 			got := g.ask()
 			if !slices.Equal(got, tc.want) {
 				t.Errorf("readRunes() got = %v, want %v", string(got), string(tc.want))
+			}
+		})
+	}
+}
+
+func TestGameValidateGuess(t *testing.T) {
+	tt := map[string]struct {
+		word     []rune
+		expected error
+	}{
+		"nominal": {
+			word:     []rune("GUESS"),
+			expected: nil,
+		},
+		"too long": {
+			word:     []rune("POCKET"),
+			expected: errInvalidWordLength,
+		},
+		"too short": {
+			word:     []rune("DOG"),
+			expected: errInvalidWordLength,
+		},
+		"empty": {
+			word:     []rune(""),
+			expected: errInvalidWordLength,
+		},
+		"nil": {
+			word:     nil,
+			expected: errInvalidWordLength,
+		},
+	}
+
+	for name, tc := range tt {
+		t.Run(name, func(t *testing.T) {
+			g := Game{}
+
+			err := g.validateGuess(tc.word)
+			if !errors.Is(err, tc.expected) {
+				t.Errorf("%c, expected %q, got %q", tc.word, tc.expected, err)
 			}
 		})
 	}
