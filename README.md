@@ -277,6 +277,12 @@ Go provides 3 types of quotes:
 | backtick     | \` \`    | Creates raw literal strings (cannot use escape sequence, such as `\n`). Use these so you do not have to escape double quotes.  |
 | single quote | ' '     | Creates runes, a single unicode code point. |
 
+In Go, strings are immutable. When you use the + operator, Go allocates memory for a string of the concatenated string size, and then copies both strings to the new location.
+
+#### strings.Builder
+
+This function stores the characters in a slice of runes.
+
 ### Pointers
 
 Go functions pass argmuments by value. If you want to alter a value, pass the function a pointer to the value.
@@ -376,6 +382,16 @@ You can create a `Reader` with the `strings.NewReader()` function. The following
 ```go
 r := strings.NewReader("HELLO")
 ```
+
+### Stringer
+
+The `Stringer` interface just returns a string:
+
+```go
+String() string
+```
+
+If a type implements String, you can use `Printf` and other formatting functions to print the type's `Stringer` method using the `%s`, `%q`, or `%v` formatting verbs:
 
 ## Strategies 
 
