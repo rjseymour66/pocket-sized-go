@@ -266,6 +266,29 @@ if !errors.Is(err, tc.expected) {
 ...
 ```
 
+#### Random numbers
+
+Go has the following libraries that generate random numbers:
+- `math/rand`: creates psuedo-random numbers but is cheap. For trivial and non-critical use.
+- `crypto/rand`: truly random numbers. Expensive, so use for non-trivial things like passwords, tokens, or security-related objects.
+
+The `Intn(n int)` function returns a number between 0 (inclusive) and `n` (non-inclusive). You can override the base value, called `source`, with the `Seed(n int)` method.
+
+You can use the `time.Now()` method to select a random-ish number for the `Seed()` parameter. For example:
+
+```go
+func pickWord(corpus []string) []rune {
+    // override the source Seed (default is Seed(1))
+	rand.Seed(time.Now().UnixNano())
+    // create the random number
+	index := rand.Intn(len(corpus))
+	return []rune(corpus[index])
+}
+```
+
+### Reading files
+
+Files are written in binary, and they are rendered by file editors. 
 
 ### Quotes and strings
 
@@ -281,7 +304,19 @@ In Go, strings are immutable. When you use the + operator, Go allocates memory f
 
 #### strings.Builder
 
-This function stores the characters in a slice of runes.
+This function stores the characters in a slice of runes. This minimalizes the number of memory allocations when you append characters to a string.
+
+The `Builder` has many methods, similar to a `bytes.Buffer`: `WriteString`, `WriteRune`, `WriteByte`, `Write` (write a `[]byte`), and `String`:
+```go
+func (fb feedback) String() string {
+	sb := strings.Builder{}
+	for _, h := range fb {
+		sb.WriteString(h.String())
+	}
+	return sb.String()
+}
+```
+
 
 ### Pointers
 
@@ -509,4 +544,23 @@ bSlice := []byte{'s', 'l', 'i', 'c', 'e'}
 fmt.Println("byte slice\t", bSlice)                     // [115 108 105 99 101]
 fmt.Println("byte -> string\t", string(bSlice))         // slice
 fmt.Println("string -> rune\t", []rune(string(bSlice))) // [115 108 105 99 101]
+```
+
+## Errors
+
+### Sentinel errors
+
+Sentinel errors are recognizable errors that indicate that the program cannot proceed. For example, `io.EOF`.
+
+The main ways to create errors in Go are the following:
+- `fmt.Errorf`
+- `errors.New`
+
+Sentinel errors must be constants. In Go, you can only create a constant using primitive types. So, you have to create new type and implement the `Error` interface:
+```go
+type stopError string
+
+func (e stopError) Error() string {
+    return string(e)
+}
 ```
