@@ -20,7 +20,7 @@ func TestLoadBookworms(t *testing.T) {
 			bookwormsFile: "testdata/bookworms.json",
 			want: []Bookworm{
 				{Name: "Fadi", Books: []Book{handmaidsTale, theBellJar}},
-				{Name: "Peggy", Books: []Book{oryxAndCrake, handmaidsTale, theBellJar}},
+				{Name: "Peggy", Books: []Book{oryxAndCrake, handmaidsTale, janeEyre}},
 			},
 			wantErr: false,
 		},
@@ -82,4 +82,100 @@ func equalBooks(books, target []Book) bool {
 		}
 	}
 	return true
+}
+
+func TestBooksCount(t *testing.T) {
+	tt := map[string]struct {
+		input []Bookworm
+		want  map[Book]uint
+	}{
+		"nominal use case": {
+			input: []Bookworm{
+				{Name: "Fadi", Books: []Book{handmaidsTale, theBellJar}},
+				{Name: "Peggy", Books: []Book{oryxAndCrake, handmaidsTale, janeEyre}},
+			},
+			want: map[Book]uint{handmaidsTale: 2, theBellJar: 1, oryxAndCrake: 1, janeEyre: 1},
+		},
+		"no bookworms": {
+			input: []Bookworm{},
+			want:  map[Book]uint{},
+		},
+		"bookworm without books": {
+			input: []Bookworm{
+				{Name: "Fadi", Books: []Book{}},
+				{Name: "Fadi", Books: []Book{}},
+			},
+			want: map[Book]uint{},
+		},
+		"bookworm with twice the same book": {
+			input: []Bookworm{
+				{Name: "Fadi", Books: []Book{handmaidsTale, theBellJar, theBellJar}},
+				{Name: "Peggy", Books: []Book{oryxAndCrake, handmaidsTale, janeEyre, janeEyre}},
+			},
+			want: map[Book]uint{handmaidsTale: 2, theBellJar: 2, oryxAndCrake: 1, janeEyre: 2},
+		},
+	}
+
+	for name, tc := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := booksCount(tc.input)
+			if !equalBooksCount(t, tc.want, got) {
+				t.Fatalf("got a different list of books: %v, expected %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func equalBooksCount(t *testing.T, got, want map[Book]uint) bool {
+	t.Helper()
+	if len(got) != len(want) {
+		return false
+	}
+
+	for book, targetCount := range want {
+		count, ok := got[book]
+		if !ok || targetCount != count {
+			return false
+		}
+	}
+	return true
+}
+
+func TestFindCommonBooks(t *testing.T) {
+	tt := map[string]struct {
+		input []Bookworm
+		want  []Book
+	}{
+		"no common book": {
+			input: []Bookworm{
+				{Name: "Fadi", Books: []Book{handmaidsTale, theBellJar}},
+				{Name: "Peggy", Books: []Book{oryxAndCrake, janeEyre}},
+			},
+			want: nil,
+		},
+		"one common book": {
+			input: []Bookworm{
+				{Name: "Fadi", Books: []Book{handmaidsTale, theBellJar}},
+				{Name: "Peggy", Books: []Book{handmaidsTale, janeEyre}},
+			},
+			want: []Book{handmaidsTale},
+		},
+		"three bookworms have the same books on their shelves": {
+			input: []Bookworm{
+				{Name: "Fadi", Books: []Book{handmaidsTale, theBellJar}},
+				{Name: "Peggy", Books: []Book{handmaidsTale, theBellJar}},
+				{Name: "Sally", Books: []Book{handmaidsTale, theBellJar}},
+			},
+			want: []Book{handmaidsTale, theBellJar},
+		},
+	}
+
+	for name, tc := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := findCommonBooks(tc.input)
+			if !equalBooks(tc.want, got) {
+				t.Fatalf("got a different list of books: %v, expected %v", got, tc.want)
+			}
+		})
+	}
 }
